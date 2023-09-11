@@ -1,0 +1,33 @@
+以下是Python的示例代码，可以清除mask.png中孤立的黑点：
+
+import cv2
+
+# 读取mask.png文件
+mask = cv2.imread('mask.png')
+
+# 转为灰度图像
+gray = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+# 使用边缘检测器检测边缘
+edges = cv2.Canny(gray, 50, 150)
+
+# 使用Hough变换检测直线
+lines = cv2.HoughLinesP(edges, 1, cv2.cv.CV_PI/180, 100, minLineLength=100, maxLineGap=10)
+
+# 清除孤立的黑点
+for line in lines:
+    rho, theta = line[0]
+    a = np.cos(theta)
+    b = np.sin(theta)
+    x0 = a*rho
+    y0 = b*rho
+    x1 = int(x0 + 1000*(-b))
+    y1 = int(y0 + 1000*(a))
+    x2 = int(x0 - 1000*(-b))
+    y2 = int(y0 - 1000*(a))
+    if x1 < 0 or x2 < 0 or y1 < 0 or y2 < 0:
+        continue
+    cv2.line(mask, (x1, y1), (x2, y2), (0, 0, 255), 2)
+
+# 保存结果
+cv2.imwrite('mask_clear.png', mask)
